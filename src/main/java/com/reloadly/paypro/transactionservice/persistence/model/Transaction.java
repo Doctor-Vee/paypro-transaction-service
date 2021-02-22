@@ -25,12 +25,17 @@ public class Transaction extends BaseModel{
     @JoinColumn(nullable = false)
     private User receiver;
 
+    @Column(nullable = false)
     private BigDecimal amount;
 
+    @Column(nullable = false)
     private String narration;
 
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
     private TransactionStatus transactionStatus;
 
+    @Column(nullable = false)
     private String transactionReference;
 
 }
