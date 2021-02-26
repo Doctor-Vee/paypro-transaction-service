@@ -42,8 +42,8 @@ public class TransactionServiceImpl implements TransactionService {
     RestTemplate restTemplate;
 
     @Override
-    public String processFundTransfer(String userAccountNumber, TransferRequest transferRequest) {
-        User sender = userRepository.findByAccountNumber(userAccountNumber).orElseThrow(() -> new UnauthorisedAccessException("Unauthorised Access - User not found"));
+    public String processFundTransfer(String username, TransferRequest transferRequest) {
+        User sender = userRepository.findByUsername(username).orElseThrow(() -> new UnauthorisedAccessException("Unauthorised Access - User not found"));
         if(ObjectUtils.isEmpty(transferRequest.getAccountNumber()) || transferRequest.getAmount() <= 0.0) throw new BadRequestException("Missing required details");
         String accountNumber = transferRequest.getAccountNumber();
         BigDecimal amount = BigDecimal.valueOf(transferRequest.getAmount());
@@ -62,15 +62,15 @@ public class TransactionServiceImpl implements TransactionService {
 
 
     @Override
-    public List<TransferDTO> getUserTransactionHistory(String userAccountNumber) {
-        User sender = userRepository.findByAccountNumber(userAccountNumber).orElseThrow(() -> new UnauthorisedAccessException("Unauthorised Access - User not found"));
+    public List<TransferDTO> getUserTransactionHistory(String username) {
+        User sender = userRepository.findByUsername(username).orElseThrow(() -> new UnauthorisedAccessException("Unauthorised Access - User not found"));
         return transactionRepository.getAllBySenderAndRecordStatusOrderByDateCreatedDesc(sender, RecordStatus.ACTIVE).stream()
                 .map(transactionDTOService::fromTransactionToDTO).collect(Collectors.toList());
     }
 
     @Override
-    public TransferDTO getUserTransaction(String userAccountNumber, String reference) {
-        User sender = userRepository.findByAccountNumber(userAccountNumber).orElseThrow(() -> new UnauthorisedAccessException("Unauthorised Access - User not found"));
+    public TransferDTO getUserTransaction(String username, String reference) {
+        User sender = userRepository.findByUsername(username).orElseThrow(() -> new UnauthorisedAccessException("Unauthorised Access - User not found"));
         Transaction transaction = transactionRepository.findByTransactionReference(reference).orElseThrow(() -> new NotFoundException("Invalid transaction reference supplied"));
         if(!sender.getUsername().equals(transaction.getSender().getUsername())) throw new UnauthorisedAccessException("This transaction was not done by you");
         return transactionDTOService.fromTransactionToDTO(transaction);

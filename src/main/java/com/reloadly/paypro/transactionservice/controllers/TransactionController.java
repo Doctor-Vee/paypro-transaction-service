@@ -4,10 +4,12 @@ import com.reloadly.paypro.transactionservice.payload.dto.TransferDTO;
 import com.reloadly.paypro.transactionservice.payload.request.LoginRequest;
 import com.reloadly.paypro.transactionservice.payload.request.LoginResponse;
 import com.reloadly.paypro.transactionservice.payload.request.TransferRequest;
+import com.reloadly.paypro.transactionservice.security.AuthenticatedUserDetails;
 import com.reloadly.paypro.transactionservice.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 //import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,26 +22,20 @@ public class TransactionController {
     TransactionService transactionService;
 
     @PostMapping("/transfer-funds")
-    public ResponseEntity<String> transferFunds(@RequestBody TransferRequest transferRequest){
-        //TODO: Add @AuthenticationPrincipal AuthenticatedUserDetails userDetails at the top here and see how to connect it to the account service
-        String userAccountNumber = "0123456789";
-        String response = transactionService.processFundTransfer(userAccountNumber, transferRequest);
+    public ResponseEntity<String> transferFunds(@AuthenticationPrincipal AuthenticatedUserDetails userDetails, @RequestBody TransferRequest transferRequest){
+        String response = transactionService.processFundTransfer(userDetails.getUsername(), transferRequest);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/history")
-    public ResponseEntity<List<TransferDTO>> getTransactionHistory(){
-        //TODO: Add @AuthenticationPrincipal AuthenticatedUserDetails userDetails at the top here and see how to connect it to the account service
-        String userAccountNumber = "0123456789";
-        List<TransferDTO> transferDTOList = transactionService.getUserTransactionHistory(userAccountNumber);
+    public ResponseEntity<List<TransferDTO>> getTransactionHistory(@AuthenticationPrincipal AuthenticatedUserDetails userDetails){
+        List<TransferDTO> transferDTOList = transactionService.getUserTransactionHistory(userDetails.getUsername());
         return ResponseEntity.ok(transferDTOList);
     }
 
     @GetMapping("/{transactionReference}")
-    public ResponseEntity<TransferDTO> getTransaction(@PathVariable String transactionReference){
-    //TODO: Add @AuthenticationPrincipal AuthenticatedUserDetails userDetails at the top here and see how to connect it to the account service
-    String userAccountNumber = "0123456789";
-    TransferDTO transferDTO = transactionService.getUserTransaction(userAccountNumber, transactionReference);
+    public ResponseEntity<TransferDTO> getTransaction(@AuthenticationPrincipal AuthenticatedUserDetails userDetails, @PathVariable String transactionReference){
+    TransferDTO transferDTO = transactionService.getUserTransaction(userDetails.getUsername(), transactionReference);
     return ResponseEntity.ok(transferDTO);
     }
 
