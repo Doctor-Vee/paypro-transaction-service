@@ -6,6 +6,8 @@ import com.reloadly.paypro.transactionservice.exception.BadRequestException;
 import com.reloadly.paypro.transactionservice.exception.NotFoundException;
 import com.reloadly.paypro.transactionservice.exception.UnauthorisedAccessException;
 import com.reloadly.paypro.transactionservice.payload.dto.TransferDTO;
+import com.reloadly.paypro.transactionservice.payload.request.LoginRequest;
+import com.reloadly.paypro.transactionservice.payload.request.LoginResponse;
 import com.reloadly.paypro.transactionservice.payload.request.TransferRequest;
 import com.reloadly.paypro.transactionservice.persistence.model.Transaction;
 import com.reloadly.paypro.transactionservice.persistence.model.User;
@@ -17,6 +19,7 @@ import com.reloadly.paypro.transactionservice.utils.AppUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -34,6 +37,9 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Autowired
     TransactionDTOService transactionDTOService;
+
+    @Autowired
+    RestTemplate restTemplate;
 
     @Override
     public String processFundTransfer(String userAccountNumber, TransferRequest transferRequest) {
@@ -68,5 +74,11 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = transactionRepository.findByTransactionReference(reference).orElseThrow(() -> new NotFoundException("Invalid transaction reference supplied"));
         if(!sender.getUsername().equals(transaction.getSender().getUsername())) throw new UnauthorisedAccessException("This transaction was not done by you");
         return transactionDTOService.fromTransactionToDTO(transaction);
+    }
+
+    @Override
+    public LoginResponse callAccountService(LoginRequest loginRequest) {
+        LoginResponse loginResponse = restTemplate.postForObject("http://paypro-account-service/api/v1/auth/login", loginRequest, LoginResponse.class);
+        return loginResponse;
     }
 }
