@@ -2,7 +2,7 @@ package com.reloadly.paypro.transactionservice.constant;
 
 public class EventTopicConstant {
 
-    private static final String BASE_TOPIC = "com.reloadly.paypro.event.";
+    private static final String BASE_TOPIC = "fvsqlil0-";
 
     public static final String TRANSACTION_COMPLETED = BASE_TOPIC + "transaction-completed";
 
